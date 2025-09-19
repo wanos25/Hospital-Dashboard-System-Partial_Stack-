@@ -1,0 +1,2076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hospital Management Dashboard</title>
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>
+tailwind.config = {
+theme: {
+extend: {
+colors: {
+primary: '#06b6d4',
+secondary: '#8b5cf6'
+},
+borderRadius: {
+'none': '0px',
+'sm': '4px',
+DEFAULT: '8px',
+'md': '12px',
+'lg': '16px',
+'xl': '20px',
+'2xl': '24px',
+'3xl': '32px',
+'full': '9999px',
+'button': '8px'
+}
+}
+}
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+<style>
+:where([class^="ri-"])::before { content: "\f3c2"; }
+body {
+background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+color: #ffffff;
+font-family: 'Inter', sans-serif;
+overflow-x: hidden;
+}
+.neon-glow {
+box-shadow: 0 0 20px rgba(6, 182, 212, 0.5), 0 0 40px rgba(6, 182, 212, 0.3), 0 0 60px rgba(6, 182, 212, 0.1);
+}
+.neon-purple {
+box-shadow: 0 0 20px rgba(139, 92, 246, 0.5), 0 0 40px rgba(139, 92, 246, 0.3), 0 0 60px rgba(139, 92, 246, 0.1);
+}
+.neon-pink {
+box-shadow: 0 0 20px rgba(236, 72, 153, 0.5), 0 0 40px rgba(236, 72, 153, 0.3), 0 0 60px rgba(236, 72, 153, 0.1);
+}
+.glass-card {
+background: rgba(255, 255, 255, 0.05);
+backdrop-filter: blur(10px);
+border: 1px solid rgba(255, 255, 255, 0.1);
+box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+}
+.hover-glow:hover {
+transform: translateY(-2px);
+box-shadow: 0 0 30px rgba(6, 182, 212, 0.6), 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+.pulse-animation {
+animation: pulse 2s infinite;
+}
+@keyframes pulse {
+0%, 100% { opacity: 1; }
+50% { opacity: 0.7; }
+}
+.floating {
+animation: floating 3s ease-in-out infinite;
+}
+@keyframes floating {
+0%, 100% { transform: translateY(0px); }
+50% { transform: translateY(-10px); }
+}
+.slide-in {
+animation: slideIn 0.5s ease-out;
+}
+@keyframes slideIn {
+from { opacity: 0; transform: translateX(-20px); }
+to { opacity: 1; transform: translateX(0); }
+}
+.counter {
+font-variant-numeric: tabular-nums;
+}
+.chat-bubble {
+max-width: 70%;
+word-wrap: break-word;
+}
+.star-rating {
+display: flex;
+gap: 2px;
+}
+.star {
+cursor: pointer;
+transition: all 0.2s ease;
+}
+.star:hover,
+.star.active {
+color: #fbbf24;
+text-shadow: 0 0 10px rgba(251, 191, 36, 0.8);
+}
+.notification-dot {
+animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes ping {
+75%, 100% {
+transform: scale(2);
+opacity: 0;
+}
+}
+.sidebar-item {
+transition: all 0.3s ease;
+position: relative;
+}
+.sidebar-item:hover {
+background: rgba(6, 182, 212, 0.1);
+border-left: 3px solid #06b6d4;
+box-shadow: inset 0 0 20px rgba(6, 182, 212, 0.2);
+}
+.sidebar-item.active {
+background: rgba(6, 182, 212, 0.2);
+border-left: 3px solid #06b6d4;
+box-shadow: inset 0 0 30px rgba(6, 182, 212, 0.3);
+}
+input:focus, textarea:focus {
+outline: none;
+box-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
+}
+.medicine-card {
+transition: all 0.3s ease;
+}
+.medicine-card:hover {
+transform: scale(1.05);
+}
+.appointment-slot {
+transition: all 0.3s ease;
+cursor: pointer;
+}
+.appointment-slot:hover {
+background: rgba(6, 182, 212, 0.2);
+box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+}
+.appointment-slot.selected {
+background: rgba(6, 182, 212, 0.3);
+box-shadow: 0 0 25px rgba(6, 182, 212, 0.6);
+}
+.appointment-slot.booked {
+background: rgba(239, 68, 68, 0.2);
+cursor: not-allowed;
+}
+.loading-spinner {
+border: 3px solid rgba(6, 182, 212, 0.3);
+border-radius: 50%;
+border-top: 3px solid #06b6d4;
+width: 30px;
+height: 30px;
+animation: spin 1s linear infinite;
+}
+@keyframes spin {
+0% { transform: rotate(0deg); }
+100% { transform: rotate(360deg); }
+}
+.typing-indicator {
+display: flex;
+gap: 4px;
+padding: 8px 12px;
+}
+.typing-dot {
+width: 6px;
+height: 6px;
+border-radius: 50%;
+background: #06b6d4;
+animation: typing 1.4s infinite ease-in-out;
+}
+.typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-dot:nth-child(2) { animation-delay: -0.16s; }
+@keyframes typing {
+0%, 80%, 100% {
+transform: scale(0);
+opacity: 0.5;
+}
+40% {
+transform: scale(1);
+opacity: 1;
+}
+}
+</style>
+</head>
+<body class="min-h-screen">
+<!-- Top Navigation -->
+<nav class="fixed top-0 left-0 right-0 z-50 glass-card border-b border-cyan-500/20">
+<div class="flex items-center justify-between px-6 py-4">
+<div class="flex items-center space-x-4">
+<h1 class="text-2xl font-['Pacifico'] text-cyan-400 neon-glow">MediCore</h1>
+</div>
+<div class="flex-1 max-w-md mx-8">
+<div class="relative">
+<input type="text" placeholder="Search doctors, specializations..."
+class="w-full px-4 py-2 pl-10 bg-white/10 border border-cyan-500/30 rounded-lg text-white placeholder-gray-300 focus:border-cyan-400">
+<div class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 flex items-center justify-center">
+<i class="ri-search-line text-cyan-400"></i>
+</div>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<div class="relative">
+<button id="notificationBtn" class="relative p-2 rounded-lg hover:bg-white/10 transition-all">
+<div class="w-6 h-6 flex items-center justify-center">
+<i class="ri-notification-3-line text-cyan-400 text-xl"></i>
+</div>
+<span class="absolute -top-1 -right-1 w-3 h-3 bg-pink-500 rounded-full notification-dot"></span>
+</button>
+<div id="notificationPanel" class="hidden absolute top-14 right-0 w-80 max-h-96 overflow-y-auto glass-card rounded-xl border border-cyan-500/20 shadow-xl z-50">
+<div class="p-4 border-b border-white/10">
+<h3 class="text-lg font-semibold text-white">Notifications</h3>
+</div>
+<div class="divide-y divide-white/10">
+<div class="p-4 hover:bg-white/5 transition-all cursor-pointer">
+<div class="flex items-start space-x-3">
+<div class="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center">
+<i class="ri-calendar-check-line text-cyan-400"></i>
+</div>
+<div class="flex-1">
+<p class="text-white text-sm">New appointment request from Emily Parker</p>
+<p class="text-gray-400 text-xs mt-1">2 minutes ago</p>
+</div>
+</div>
+</div>
+<div class="p-4 hover:bg-white/5 transition-all cursor-pointer">
+<div class="flex items-start space-x-3">
+<div class="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
+<i class="ri-message-3-line text-purple-400"></i>
+</div>
+<div class="flex-1">
+<p class="text-white text-sm">Dr. Chen left a message about patient consultation</p>
+<p class="text-gray-400 text-xs mt-1">15 minutes ago</p>
+</div>
+</div>
+</div>
+<div class="p-4 hover:bg-white/5 transition-all cursor-pointer">
+<div class="flex items-start space-x-3">
+<div class="w-8 h-8 rounded-full bg-pink-500/20 flex items-center justify-center">
+<i class="ri-heart-pulse-line text-pink-400"></i>
+</div>
+<div class="flex-1">
+<p class="text-white text-sm">Emergency alert: Patient in Room 302 needs attention</p>
+<p class="text-gray-400 text-xs mt-1">28 minutes ago</p>
+</div>
+</div>
+</div>
+<div class="p-4 hover:bg-white/5 transition-all cursor-pointer">
+<div class="flex items-start space-x-3">
+<div class="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center">
+<i class="ri-medicine-bottle-line text-yellow-400"></i>
+</div>
+<div class="flex-1">
+<p class="text-white text-sm">Pharmacy: Low stock alert for Amoxicillin</p>
+<p class="text-gray-400 text-xs mt-1">45 minutes ago</p>
+</div>
+</div>
+</div>
+</div>
+<div class="p-3 border-t border-white/10">
+<button class="w-full px-4 py-2 bg-white/5 text-cyan-400 rounded-lg text-sm hover:bg-white/10 transition-all whitespace-nowrap !rounded-button">
+View All Notifications
+</button>
+</div>
+</div>
+</div>
+<div class="flex items-center space-x-3">
+<img src="https://readdy.ai/api/search-image?query=professional%20senior%20doctor%20portrait%20with%20white%20coat%20and%20stethoscope%2C%20confident%20smile%2C%20modern%20medical%20office%20background&width=40&height=40&seq=admin1&orientation=squarish"
+alt="Profile" class="w-10 h-10 rounded-full border-2 border-cyan-400 neon-glow object-cover">
+<div>
+<p class="text-sm font-medium text-white">Dr. Wannos Mohamed</p>
+<p class="text-xs text-gray-300">Administrator</p>
+</div>
+</div>
+</div>
+</div>
+</nav>
+<!-- Sidebar -->
+<aside class="fixed left-0 top-16 bottom-0 w-64 glass-card border-r border-cyan-500/20 z-40">
+<nav class="p-4 space-y-2">
+<a href="#" class="sidebar-item active flex items-center space-x-3 px-4 py-3 rounded-lg" data-section="dashboard">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-dashboard-line text-cyan-400"></i>
+</div>
+<span class="text-white">Dashboard</span>
+</a>
+<a href="#" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-lg" data-section="doctors">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-user-heart-line text-cyan-400"></i>
+</div>
+<span class="text-white">Doctors</span>
+</a>
+<a href="#" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-lg" data-section="pharmacy">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-capsule-line text-cyan-400"></i>
+</div>
+<span class="text-white">Pharmacy</span>
+</a>
+<a href="#" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-lg" data-section="cart">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-shopping-cart-line text-cyan-400"></i>
+</div>
+<span class="text-white">Cart</span>
+</a>
+<a href="#" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-lg" data-section="appointments">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-calendar-line text-cyan-400"></i>
+</div>
+<span class="text-white">Appointments</span>
+</a>
+<a href="#" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-lg" data-section="profile">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-user-line text-cyan-400"></i>
+</div>
+<span class="text-white">Profile</span>
+</a>
+<a href="#" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-lg" data-section="chat">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-chat-3-line text-cyan-400"></i>
+</div>
+<span class="text-white">Chat</span>
+</a>
+<a href="#" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-lg" data-section="settings">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-settings-line text-cyan-400"></i>
+</div>
+<span class="text-white">Settings</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content -->
+<main class="ml-64 pt-16 min-h-screen">
+<!-- Dashboard Section -->
+<section id="dashboard" class="section-content p-6">
+<div class="mb-8">
+<h2 class="text-3xl font-bold text-white mb-2">Hospital Dashboard</h2>
+<p class="text-gray-300">Welcome back! Here's what's happening at your hospital today.</p>
+</div>
+<!-- Statistics Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<div class="glass-card p-6 rounded-xl hover-glow floating">
+<div class="flex items-center justify-between">
+<div>
+<p class="text-gray-300 text-sm">Daily Appointments</p>
+<p class="text-3xl font-bold text-cyan-400 counter" data-target="47">0</p>
+</div>
+<div class="w-12 h-12 bg-cyan-500/20 rounded-lg flex items-center justify-center pulse-animation">
+<i class="ri-calendar-check-line text-cyan-400 text-2xl"></i>
+</div>
+</div>
+<div class="mt-4 flex items-center text-green-400 text-sm">
+<i class="ri-arrow-up-line mr-1"></i>
+<span>12% from yesterday</span>
+</div>
+</div>
+<div class="glass-card p-6 rounded-xl hover-glow floating" style="animation-delay: 0.2s;">
+<div class="flex items-center justify-between">
+<div>
+<p class="text-gray-300 text-sm">Active Doctors</p>
+<p class="text-3xl font-bold text-purple-400 counter" data-target="25">0</p>
+</div>
+<div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center pulse-animation">
+<i class="ri-user-heart-line text-purple-400 text-2xl"></i>
+</div>
+</div>
+<div class="mt-4 flex items-center text-green-400 text-sm">
+<i class="ri-arrow-up-line mr-1"></i>
+<span>3 new this week</span>
+</div>
+</div>
+<div class="glass-card p-6 rounded-xl hover-glow floating" style="animation-delay: 0.4s;">
+<div class="flex items-center justify-between">
+<div>
+<p class="text-gray-300 text-sm">Total Patients</p>
+<p class="text-3xl font-bold text-pink-400 counter" data-target="1247">0</p>
+</div>
+<div class="w-12 h-12 bg-pink-500/20 rounded-lg flex items-center justify-center pulse-animation">
+<i class="ri-user-line text-pink-400 text-2xl"></i>
+</div>
+</div>
+<div class="mt-4 flex items-center text-green-400 text-sm">
+<i class="ri-arrow-up-line mr-1"></i>
+<span>8% this month</span>
+</div>
+</div>
+<div class="glass-card p-6 rounded-xl hover-glow floating" style="animation-delay: 0.6s;">
+<div class="flex items-center justify-between">
+<div>
+<p class="text-gray-300 text-sm">Pharmacy Sales</p>
+<p class="text-3xl font-bold text-yellow-400 counter" data-target="8750">0</p>
+</div>
+<div class="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center pulse-animation">
+<i class="ri-money-dollar-circle-line text-yellow-400 text-2xl"></i>
+</div>
+</div>
+<div class="mt-4 flex items-center text-green-400 text-sm">
+<i class="ri-arrow-up-line mr-1"></i>
+<span>$2,340 today</span>
+</div>
+</div>
+</div>
+<!-- Charts Section -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="glass-card p-6 rounded-xl">
+<h3 class="text-xl font-semibold text-white mb-4">Appointments Overview</h3>
+<div id="appointmentsChart" style="height: 300px;"></div>
+</div>
+<div class="glass-card p-6 rounded-xl">
+<h3 class="text-xl font-semibold text-white mb-4">Department Distribution</h3>
+<div id="departmentChart" style="height: 300px;"></div>
+</div>
+</div>
+</section>
+<!-- Doctors Section -->
+<section id="doctors" class="section-content p-6 hidden">
+<div class="mb-8">
+<h2 class="text-3xl font-bold text-white mb-2">Medical Specialists</h2>
+<p class="text-gray-300">Find and book appointments with our expert doctors</p>
+</div>
+<!-- Specialization Tabs -->
+<div class="flex space-x-2 mb-8 overflow-x-auto">
+<button class="specialization-tab active px-6 py-3 rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 whitespace-nowrap !rounded-button" data-specialty="cardiology">
+Cardiology & Surgery
+</button>
+<button class="specialization-tab px-6 py-3 rounded-lg bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 whitespace-nowrap !rounded-button" data-specialty="ent">
+ENT
+</button>
+<button class="specialization-tab px-6 py-3 rounded-lg bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 whitespace-nowrap !rounded-button" data-specialty="gynecology">
+Gynecology & Obstetrics
+</button>
+<button class="specialization-tab px-6 py-3 rounded-lg bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 whitespace-nowrap !rounded-button" data-specialty="urology">
+Urology & Infertility
+</button>
+<button class="specialization-tab px-6 py-3 rounded-lg bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 whitespace-nowrap !rounded-button" data-specialty="pediatrics">
+Pediatrics
+</button>
+</div>
+<!-- Doctors Grid -->
+<div id="doctorsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Doctors will be populated by JavaScript -->
+</div>
+<!-- Doctor Template (Hidden) -->
+<div id="doctor-template" class="glass-card p-6 rounded-xl hover-glow" style="display:none;">
+  <div class="text-center mb-4">
+    <img src="" alt="Doctor" class="doctor-img w-20 h-20 rounded-full mx-auto mb-4 border-2 border-cyan-400 neon-glow object-cover">
+    <h3 class="doctor-name text-xl font-semibold text-white mb-2">Dr. Name</h3>
+    <p class="doctor-specialization text-cyan-400 text-sm mb-4">Specialist</p>
+  </div>
+
+  <div class="space-y-3 mb-4">
+    <div class="flex items-center space-x-2 text-sm">
+      <div class="w-4 h-4 flex items-center justify-center">
+        <i class="ri-mail-line text-cyan-400"></i>
+      </div>
+      <span class="doctor-email text-gray-300">example@email.com</span>
+    </div>
+
+    <div class="flex items-center space-x-2 text-sm">
+      <div class="w-4 h-4 flex items-center justify-center">
+        <i class="ri-phone-line text-cyan-400"></i>
+      </div>
+      <span class="doctor-phone text-gray-300">+123456789</span>
+    </div>
+
+    <div class="flex items-center space-x-2 text-sm">
+      <div class="w-4 h-4 flex items-center justify-center">
+        <i class="ri-map-pin-line text-cyan-400"></i>
+      </div>
+      <span class="doctor-address text-gray-300">No Address</span>
+    </div>
+
+    <div class="flex items-center justify-between">
+      <span class="doctor-price text-lg font-bold text-cyan-400">$0</span>
+      <div class="doctor-rating star-rating">
+        ⭐⭐⭐⭐⭐
+      </div>
+    </div>
+  </div>
+
+  <button class="w-full px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 text-white rounded-lg font-semibold hover:from-cyan-600 hover:to-purple-600 transition-all neon-glow whitespace-nowrap !rounded-button">
+    Book Appointment
+  </button>
+</div>
+
+<!-- مكان عرض الدكاترة -->
+<div id="doctors-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+</section>
+<!-- Pharmacy Section -->
+<section id="pharmacy" class="section-content p-6 hidden">
+<div class="mb-8">
+<h2 class="text-3xl font-bold text-white mb-2">Hospital Pharmacy</h2>
+<p class="text-gray-300">Browse and order medicines by medical specialization</p>
+</div>
+<!-- Medicine Categories -->
+<div class="flex space-x-2 mb-8 overflow-x-auto">
+<button class="medicine-category active px-6 py-3 rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 whitespace-nowrap !rounded-button" data-category="cardiology">
+Cardiology
+</button>
+<button class="medicine-category px-6 py-3 rounded-lg bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 whitespace-nowrap !rounded-button" data-category="ent">
+ENT
+</button>
+<button class="medicine-category px-6 py-3 rounded-lg bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 whitespace-nowrap !rounded-button" data-category="gynecology">
+Gynecology
+</button>
+<button class="medicine-category px-6 py-3 rounded-lg bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 whitespace-nowrap !rounded-button" data-category="urology">
+Urology
+</button>
+<button class="medicine-category px-6 py-3 rounded-lg bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 whitespace-nowrap !rounded-button" data-category="pediatrics">
+Pediatrics
+</button>
+</div>
+<!-- Medicines Grid -->
+<div id="medicinesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Medicines will be populated by JavaScript -->
+</div>
+<!-- Medicine Template (Hidden) -->
+<div class="glass-card p-4 rounded-xl medicine-card hover-glow">
+  <div class="text-center mb-4">
+    <img src="https://readdy.ai/api/search-image?query=modern%20pharmaceutical%20medicine%20bottle..." alt="Atorvastatin" class="w-16 h-16 mx-auto mb-3 object-cover rounded-lg">
+    <h3 class="medicine-name text-lg font-semibold text-white mb-2">Atorvastatin</h3>
+    <p class="text-gray-300 text-sm mb-3">Cholesterol-lowering medication</p>
+  </div>
+  <div class="space-y-2 mb-4">
+    <div class="flex justify-between items-center">
+      <span class="text-gray-300 text-sm">Price:</span>
+      <span class="medicine-price text-cyan-400 font-bold">$45.99</span>
+    </div>
+    <div class="flex justify-between items-center">
+      <span class="text-gray-300 text-sm">Stock:</span>
+      <span class="text-green-400 text-sm">1000 available</span>
+    </div>
+  </div>
+  <button class="w-full px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-500 text-white rounded-lg font-semibold hover:from-cyan-600 hover:to-purple-600 transition-all neon-glow text-sm whitespace-nowrap !rounded-button">
+    Add to Cart
+  </button>
+</div>
+
+<div class="glass-card p-4 rounded-xl medicine-card hover-glow">
+  <div class="text-center mb-4">
+    <img src="https://readdy.ai/api/search-image?query=modern%20pharmaceutical%20medicine%20bottle..." alt="Propranolol" class="w-16 h-16 mx-auto mb-3 object-cover rounded-lg">
+    <h3 class="medicine-name text-lg font-semibold text-white mb-2">Propranolol</h3>
+    <p class="text-gray-300 text-sm mb-3">Non-selective beta-blocker</p>
+  </div>
+  <div class="space-y-2 mb-4">
+    <div class="flex justify-between items-center">
+      <span class="text-gray-300 text-sm">Price:</span>
+      <span class="medicine-price text-cyan-400 font-bold">$22.90</span>
+    </div>
+    <div class="flex justify-between items-center">
+      <span class="text-gray-300 text-sm">Stock:</span>
+      <span class="text-green-400 text-sm">1000 available</span>
+    </div>
+  </div>
+  <button class="w-full px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-500 text-white rounded-lg font-semibold hover:from-cyan-600 hover:to-purple-600 transition-all neon-glow text-sm whitespace-nowrap !rounded-button">
+    Add to Cart
+  </button>
+</div>
+
+<div class="glass-card p-4 rounded-xl medicine-card hover-glow">
+  <div class="text-center mb-4">
+    <img src="https://readdy.ai/api/search-image?query=modern%20pharmaceutical%20medicine%20bottle..." alt="Diltiazem" class="w-16 h-16 mx-auto mb-3 object-cover rounded-lg">
+    <h3 class="medicine-name text-lg font-semibold text-white mb-2">Diltiazem</h3>
+    <p class="text-gray-300 text-sm mb-3">Calcium channel blocker</p>
+  </div>
+  <div class="space-y-2 mb-4">
+    <div class="flex justify-between items-center">
+      <span class="text-gray-300 text-sm">Price:</span>
+      <span class="medicine-price text-cyan-400 font-bold">$41.50</span>
+    </div>
+    <div class="flex justify-between items-center">
+      <span class="text-gray-300 text-sm">Stock:</span>
+      <span class="text-green-400 text-sm">1000 available</span>
+    </div>
+  </div>
+  <button class="w-full px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-500 text-white rounded-lg font-semibold hover:from-cyan-600 hover:to-purple-600 transition-all neon-glow text-sm whitespace-nowrap !rounded-button">
+    Add to Cart
+  </button>
+</div>
+
+<div class="glass-card p-4 rounded-xl medicine-card hover-glow">
+  <div class="text-center mb-4">
+    <img src="https://readdy.ai/api/search-image?query=modern%20pharmaceutical%20medicine%20bottle..." alt="Enalapril" class="w-16 h-16 mx-auto mb-3 object-cover rounded-lg">
+    <h3 class="medicine-name text-lg font-semibold text-white mb-2">Enalapril</h3>
+    <p class="text-gray-300 text-sm mb-3">ACE inhibitor medication</p>
+  </div>
+  <div class="space-y-2 mb-4">
+    <div class="flex justify-between items-center">
+      <span class="text-gray-300 text-sm">Price:</span>
+      <span class="medicine-price text-cyan-400 font-bold">$27.35</span>
+    </div>
+    <div class="flex justify-between items-center">
+      <span class="text-gray-300 text-sm">Stock:</span>
+      <span class="text-green-400 text-sm">1000 available</span>
+    </div>
+  </div>
+  <button class="w-full px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-500 text-white rounded-lg font-semibold hover:from-cyan-600 hover:to-purple-600 transition-all neon-glow text-sm whitespace-nowrap !rounded-button">
+    Add to Cart
+  </button>
+</div>
+
+<div class="glass-card p-4 rounded-xl medicine-card hover-glow">
+  <div class="text-center mb-4">
+    <img src="https://readdy.ai/api/search-image?query=modern%20pharmaceutical%20medicine%20bottle..." alt="Hydrochlorothiazide" class="w-16 h-16 mx-auto mb-3 object-cover rounded-lg">
+    <h3 class="medicine-name text-lg font-semibold text-white mb-2">Hydrochlorothiazide</h3>
+    <p class="text-gray-300 text-sm mb-3">Thiazide diuretic</p>
+  </div>
+  <div class="space-y-2 mb-4">
+    <div class="flex justify-between items-center">
+      <span class="text-gray-300 text-sm">Price:</span>
+      <span class="medicine-price text-cyan-400 font-bold">$15.80</span>
+    </div>
+    <div class="flex justify-between items-center">
+      <span class="text-gray-300 text-sm">Stock:</span>
+      <span class="text-green-400 text-sm">1000 available</span>
+    </div>
+  </div>
+  <button class="w-full px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-500 text-white rounded-lg font-semibold hover:from-cyan-600 hover:to-purple-600 transition-all neon-glow text-sm whitespace-nowrap !rounded-button">
+    Add to Cart
+  </button>
+</div>
+
+<div class="glass-card p-4 rounded-xl medicine-card hover-glow">
+  <div class="text-center mb-4">
+    <img src="https://readdy.ai/api/search-image?query=modern%20pharmaceutical%20medicine%20bottle..." alt="Rosuvastatin" class="w-16 h-16 mx-auto mb-3 object-cover rounded-lg">
+    <h3 class="medicine-name text-lg font-semibold text-white mb-2">Rosuvastatin</h3>
+    <p class="text-gray-300 text-sm mb-3">High-intensity statin</p>
+  </div>
+  <div class="space-y-2 mb-4">
+    <div class="flex justify-between items-center">
+      <span class="text-gray-300 text-sm">Price:</span>
+      <span class="medicine-price text-cyan-400 font-bold">$58.90</span>
+    </div>
+    <div class="flex justify-between items-center">
+      <span class="text-gray-300 text-sm">Stock:</span>
+      <span class="text-green-400 text-sm">1000 available</span>
+    </div>
+  </div>
+  <button class="w-full px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-500 text-white rounded-lg font-semibold hover:from-cyan-600 hover:to-purple-600 transition-all neon-glow text-sm whitespace-nowrap !rounded-button">
+    Add to Cart
+  </button>
+</div>
+
+<!-- مكان عرض الأدوية -->
+<div id="pharmacy-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+</section>
+<!-- Cart Section -->
+<section id="cart" class="section-content p-6 slide-in hidden">
+  <div class="mb-8">
+    <h2 class="text-3xl font-bold text-white mb-2">Your Cart</h2>
+    <p class="text-gray-300">Review your selected medicines and appointments</p>
+  </div>
+
+  <!-- هنا كود البوكس بتاع الكارت -->
+  <div class="glass-card p-6 rounded-xl">
+    <h3 class="text-xl font-semibold text-white mb-4">Your Cart</h3>
+    <div id="cart-items" class="space-y-4"></div>
+    
+    <div class="flex justify-between items-center mt-6 border-t border-white/10 pt-4">
+      <span class="text-lg font-bold text-white">Total:</span>
+      <span id="cart-total" class="text-lg font-bold text-cyan-400">$0</span>
+    </div>
+
+    <button id="confirmPurchase" class="w-full mt-4 px-6 py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-lg font-semibold hover:from-green-600 hover:to-blue-600 transition-all neon-glow whitespace-nowrap !rounded-button">
+      Confirm Purchase
+    </button>
+  </div>
+</section>
+<!-- Appointments Section -->
+<section id="appointments" class="section-content p-6 hidden">
+<div class="mb-8">
+<h2 class="text-3xl font-bold text-white mb-2">Book Appointment</h2>
+<p class="text-gray-300">Select your preferred time slot (5:00 PM - 10:00 PM)</p>
+</div>
+<div class="glass-card p-6 rounded-xl">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div>
+<h3 class="text-xl font-semibold text-white mb-4">Available Time Slots</h3>
+<div id="timeSlots" class="grid grid-cols-2 gap-3">
+<!-- Time slots will be generated by JavaScript -->
+</div>
+</div>
+<div>
+<h3 class="text-xl font-semibold text-white mb-4">Appointment Details</h3>
+<div class="space-y-4">
+<div>
+<label class="block text-gray-300 mb-2">Selected Time</label>
+<input type="text" id="selectedTime" readonly class="w-full px-4 py-2 bg-white/10 border border-cyan-500/30 rounded-lg text-white">
+</div>
+<div>
+<label class="block text-gray-300 mb-2">Doctor</label>
+<select id="doctorSelect" class="w-full px-4 py-2 bg-white/10 border border-cyan-500/30 rounded-lg text-white pr-8">
+<option value="">Select a doctor</option>
+</select>
+</div>
+<div>
+<label class="block text-gray-300 mb-2">Reason for Visit</label>
+<textarea id="visitReason" class="w-full px-4 py-2 bg-white/10 border border-cyan-500/30 rounded-lg text-white h-24 resize-none" placeholder="Describe your symptoms or reason for visit..."></textarea>
+</div>
+<button id="bookAppointment" class="w-full px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 text-white rounded-lg font-semibold hover:from-cyan-600 hover:to-purple-600 transition-all neon-glow whitespace-nowrap !rounded-button">
+Book Appointment
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Profile Section -->
+<section id="profile" class="section-content p-6 hidden">
+<div class="mb-8">
+<h2 class="text-3xl font-bold text-white mb-2">User Profile</h2>
+<p class="text-gray-300">Manage your personal information and account settings</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Profile Header -->
+<div class="lg:col-span-1">
+<div class="glass-card p-6 rounded-xl text-center">
+<div class="relative inline-block mb-4">
+<img id="profileImage" src="https://readdy.ai/api/search-image?query=professional%20doctor%20portrait%20with%20white%20coat%20in%20modern%20hospital%20setting%2C%20clean%20background%2C%20high%20quality%20medical%20photography&width=120&height=120&seq=profile2&orientation=squarish"
+alt="Profile" class="w-24 h-24 rounded-full border-4 border-cyan-400 neon-glow object-cover mx-auto">
+<div class="absolute -bottom-2 -right-2 w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center cursor-pointer hover:bg-cyan-600 transition-all">
+<i class="ri-camera-line text-white text-sm"></i>
+</div>
+</div>
+<h3 id="profileName" class="text-xl font-semibold text-white mb-1">Dr. Sarah Johnson</h3>
+<div id="profileRole" class="inline-block px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-full text-sm border border-cyan-500/30 mb-4">
+Administrator
+</div>
+<button id="editProfileBtn" class="w-full px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-500 text-white rounded-lg font-semibold hover:from-cyan-600 hover:to-purple-600 transition-all whitespace-nowrap !rounded-button">
+Edit Profile
+</button>
+</div>
+</div>
+<!-- Profile Information -->
+<div class="lg:col-span-2">
+<div class="space-y-6">
+<!-- Personal Details -->
+<div class="glass-card p-6 rounded-xl">
+<h4 class="text-lg font-semibold text-white mb-4">Personal Details</h4>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="block text-gray-300 mb-2">Full Name</label>
+<input type="text" id="fullName" value="Dr. Sarah Johnson" class="w-full px-4 py-2 bg-white/10 border border-cyan-500/30 rounded-lg text-white" readonly>
+</div>
+<div>
+<label class="block text-gray-300 mb-2">Specialization</label>
+<input type="text" id="specialization" value="General Medicine" class="w-full px-4 py-2 bg-white/10 border border-cyan-500/30 rounded-lg text-white" readonly>
+</div>
+<div>
+<label class="block text-gray-300 mb-2">Employee ID</label>
+<input type="text" id="employeeId" value="EMP001" class="w-full px-4 py-2 bg-white/10 border border-cyan-500/30 rounded-lg text-white" readonly>
+</div>
+<div>
+<label class="block text-gray-300 mb-2">Department</label>
+<input type="text" id="department" value="Administration" class="w-full px-4 py-2 bg-white/10 border border-cyan-500/30 rounded-lg text-white" readonly>
+</div>
+</div>
+</div>
+<!-- Contact Information -->
+<div class="glass-card p-6 rounded-xl">
+<h4 class="text-lg font-semibold text-white mb-4">Contact Information</h4>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="block text-gray-300 mb-2">Email Address</label>
+<input type="email" id="email" value="sarah.johnson@medicore.com" class="w-full px-4 py-2 bg-white/10 border border-cyan-500/30 rounded-lg text-white" readonly>
+</div>
+<div>
+<label class="block text-gray-300 mb-2">Phone Number</label>
+<input type="tel" id="phone" value="+1 (555) 123-4567" class="w-full px-4 py-2 bg-white/10 border border-cyan-500/30 rounded-lg text-white" readonly>
+</div>
+<div class="md:col-span-2">
+<label class="block text-gray-300 mb-2">Address</label>
+<input type="text" id="address" value="123 Medical Center Drive, Healthcare City, HC 12345" class="w-full px-4 py-2 bg-white/10 border border-cyan-500/30 rounded-lg text-white" readonly>
+</div>
+</div>
+</div>
+<!-- Account Settings -->
+<div class="glass-card p-6 rounded-xl">
+<h4 class="text-lg font-semibold text-white mb-4">Account Settings</h4>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<div>
+<p class="text-white font-medium">Email Notifications</p>
+<p class="text-gray-300 text-sm">Receive appointment and system notifications</p>
+</div>
+<div class="toggle-switch" data-setting="emailNotifications">
+<input type="checkbox" id="emailNotifications" checked>
+<label for="emailNotifications" class="toggle-label"></label>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div>
+<p class="text-white font-medium">SMS Notifications</p>
+<p class="text-gray-300 text-sm">Receive urgent notifications via SMS</p>
+</div>
+<div class="toggle-switch" data-setting="smsNotifications">
+<input type="checkbox" id="smsNotifications">
+<label for="smsNotifications" class="toggle-label"></label>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div>
+<p class="text-white font-medium">Two-Factor Authentication</p>
+<p class="text-gray-300 text-sm">Add extra security to your account</p>
+</div>
+<div class="toggle-switch" data-setting="twoFactor">
+<input type="checkbox" id="twoFactor" checked>
+<label for="twoFactor" class="toggle-label"></label>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Chat Section -->
+<section id="chat" class="section-content p-6 hidden">
+<div class="mb-8">
+<h2 class="text-3xl font-bold text-white mb-2">Live Chat</h2>
+<p class="text-gray-300">Connect with Dr. Wanos Mohamed Abdelrahman</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-6 h-96">
+<!-- Contact List -->
+<div class="lg:col-span-1">
+<div class="glass-card p-4 rounded-xl h-full">
+<h3 class="text-lg font-semibold text-white mb-4">Contacts</h3>
+<div class="space-y-3">
+<div class="contact-item active flex items-center space-x-3 p-3 rounded-lg bg-cyan-500/20 border border-cyan-500/30 cursor-pointer">
+<div class="relative">
+<img src="https://readdy.ai/api/search-image?query=professional%20senior%20doctor%20portrait%20with%20white%20coat%20and%20stethoscope%2C%20confident%20smile%2C%20modern%20medical%20office%20background&width=40&height=40&seq=admin1&orientation=squarish"
+alt="Dr. Wanos" class="w-10 h-10 rounded-full object-cover">
+<span class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-gray-800"></span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-white font-medium truncate">Dr. Wanos Mohamed</p>
+<p class="text-gray-300 text-sm truncate">General Doctor</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Chat Area -->
+<div class="lg:col-span-3">
+<div class="glass-card rounded-xl h-full flex flex-col">
+<!-- Chat Header -->
+<div class="flex items-center justify-between p-4 border-b border-white/10">
+<div class="flex items-center space-x-3">
+<img src="https://readdy.ai/api/search-image?query=professional%20senior%20doctor%20portrait%20with%20white%20coat%20and%20stethoscope%2C%20confident%20smile%2C%20modern%20medical%20office%20background&width=40&height=40&seq=admin2&orientation=squarish"
+alt="Dr. Wanos" class="w-10 h-10 rounded-full object-cover">
+<div>
+<p class="text-white font-medium">Dr. Wanos Mohamed Abdelrahman</p>
+<p class="text-green-400 text-sm flex items-center">
+<span class="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+Online
+</p>
+</div>
+</div>
+<div class="flex items-center space-x-2">
+<button class="p-2 hover:bg-white/10 rounded-lg transition-all">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-phone-line text-cyan-400"></i>
+</div>
+</button>
+<button class="p-2 hover:bg-white/10 rounded-lg transition-all">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-video-line text-cyan-400"></i>
+</div>
+</button>
+</div>
+</div>
+<!-- Chat Messages -->
+<div id="chatMessages" class="flex-1 p-4 overflow-y-auto space-y-4">
+<div class="flex items-start space-x-3">
+<img src="https://readdy.ai/api/search-image?query=professional%20senior%20doctor%20portrait%20with%20white%20coat%20and%20stethoscope%2C%20confident%20smile%2C%20modern%20medical%20office%20background&width=32&height=32&seq=admin3&orientation=squarish"
+alt="Dr. Wanos" class="w-8 h-8 rounded-full object-cover">
+<div class="chat-bubble bg-purple-500/20 border border-purple-500/30 rounded-lg p-3 neon-purple">
+<p class="text-white">Hello! I'm Dr. Wanos. How can I help you today?</p>
+<span class="text-xs text-gray-400 mt-1 block">2:30 PM</span>
+</div>
+</div>
+<div class="flex items-start space-x-3 justify-end">
+<div class="chat-bubble bg-cyan-500/20 border border-cyan-500/30 rounded-lg p-3 neon-glow">
+<p class="text-white">Hi Doctor! I have some questions about my recent test results.</p>
+<span class="text-xs text-gray-400 mt-1 block text-right">2:32 PM</span>
+</div>
+<img src="https://readdy.ai/api/search-image?query=professional%20doctor%20portrait%20with%20white%20coat%20in%20modern%20hospital%20setting%2C%20clean%20background%2C%20high%20quality%20medical%20photography&width=32&height=32&seq=profile3&orientation=squarish"
+alt="You" class="w-8 h-8 rounded-full object-cover">
+</div>
+<div class="flex items-start space-x-3">
+<img src="https://readdy.ai/api/search-image?query=professional%20senior%20doctor%20portrait%20with%20white%20coat%20and%20stethoscope%2C%20confident%20smile%2C%20modern%20medical%20office%20background&width=32&height=32&seq=admin4&orientation=squarish"
+alt="Dr. Wanos" class="w-8 h-8 rounded-full object-cover">
+<div class="chat-bubble bg-purple-500/20 border border-purple-500/30 rounded-lg p-3 neon-purple">
+<p class="text-white">Of course! I'd be happy to review your results with you. Could you please share which tests you're referring to?</p>
+<span class="text-xs text-gray-400 mt-1 block">2:33 PM</span>
+</div>
+</div>
+<div id="typingIndicator" class="hidden flex items-start space-x-3">
+<img src="https://readdy.ai/api/search-image?query=professional%20senior%20doctor%20portrait%20with%20white%20coat%20and%20stethoscope%2C%20confident%20smile%2C%20modern%20medical%20office%20background&width=32&height=32&seq=admin5&orientation=squarish"
+alt="Dr. Wanos" class="w-8 h-8 rounded-full object-cover">
+<div class="typing-indicator bg-purple-500/20 border border-purple-500/30 rounded-lg">
+<div class="typing-dot"></div>
+<div class="typing-dot"></div>
+<div class="typing-dot"></div>
+</div>
+</div>
+</div>
+<!-- Chat Input -->
+<div class="p-4 border-t border-white/10">
+<div class="flex items-center space-x-3">
+<button class="p-2 hover:bg-white/10 rounded-lg transition-all">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-attachment-line text-cyan-400"></i>
+</div>
+</button>
+<div class="flex-1 relative">
+<input type="text" id="chatInput" placeholder="Type your message..."
+class="w-full px-4 py-2 pr-12 bg-white/10 border border-cyan-500/30 rounded-lg text-white placeholder-gray-300 focus:border-cyan-400">
+<button id="emojiBtn" class="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-white/10 rounded transition-all">
+<div class="w-4 h-4 flex items-center justify-center">
+<i class="ri-emotion-line text-cyan-400"></i>
+</div>
+</button>
+</div>
+<button id="sendMessage" class="p-2 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg hover:from-cyan-600 hover:to-purple-600 transition-all neon-glow">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-send-plane-line text-white"></i>
+</div>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Settings Section -->
+<section id="settings" class="section-content p-6 hidden">
+<div class="mb-8">
+<h2 class="text-3xl font-bold text-white mb-2">System Settings</h2>
+<p class="text-gray-300">Configure your hospital management system preferences</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<!-- General Settings -->
+<div class="glass-card p-6 rounded-xl">
+<h3 class="text-xl font-semibold text-white mb-6">General Settings</h3>
+<div class="space-y-6">
+<div>
+<label class="block text-gray-300 mb-2">Hospital Name</label>
+<input type="text" value="MediCore Hospital" class="w-full px-4 py-2 bg-white/10 border border-cyan-500/30 rounded-lg text-white">
+</div>
+<div>
+<label class="block text-gray-300 mb-2">Time Zone</label>
+<select class="w-full px-4 py-2 bg-white/10 border border-cyan-500/30 rounded-lg text-white pr-8">
+<option>UTC-05:00 Eastern Time</option>
+<option>UTC-06:00 Central Time</option>
+<option>UTC-07:00 Mountain Time</option>
+<option>UTC-08:00 Pacific Time</option>
+</select>
+</div>
+<div>
+<label class="block text-gray-300 mb-2">Language</label>
+<select class="w-full px-4 py-2 bg-white/10 border border-cyan-500/30 rounded-lg text-white pr-8">
+<option>English</option>
+<option>Spanish</option>
+<option>French</option>
+<option>German</option>
+</select>
+</div>
+<div class="flex items-center justify-between">
+<div>
+<p class="text-white font-medium">Dark Mode</p>
+<p class="text-gray-300 text-sm">Enable dark theme interface</p>
+</div>
+<div class="toggle-switch">
+<input type="checkbox" id="darkMode" checked>
+<label for="darkMode" class="toggle-label"></label>
+</div>
+</div>
+</div>
+</div>
+<!-- Security Settings -->
+<div class="glass-card p-6 rounded-xl">
+<h3 class="text-xl font-semibold text-white mb-6">Security Settings</h3>
+<div class="space-y-6">
+<div class="flex items-center justify-between">
+<div>
+<p class="text-white font-medium">Auto Logout</p>
+<p class="text-gray-300 text-sm">Automatically logout after inactivity</p>
+</div>
+<div class="toggle-switch">
+<input type="checkbox" id="autoLogout" checked>
+<label for="autoLogout" class="toggle-label"></label>
+</div>
+</div>
+<div>
+<label class="block text-gray-300 mb-2">Session Timeout (minutes)</label>
+<input type="number" value="30" min="5" max="120" class="w-full px-4 py-2 bg-white/10 border border-cyan-500/30 rounded-lg text-white">
+</div>
+<div class="flex items-center justify-between">
+<div>
+<p class="text-white font-medium">Login Alerts</p>
+<p class="text-gray-300 text-sm">Get notified of new login attempts</p>
+</div>
+<div class="toggle-switch">
+<input type="checkbox" id="loginAlerts" checked>
+<label for="loginAlerts" class="toggle-label"></label>
+</div>
+</div>
+<button class="w-full px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg font-semibold hover:from-red-600 hover:to-pink-600 transition-all whitespace-nowrap !rounded-button">
+Change Password
+</button>
+</div>
+</div>
+<!-- Notification Settings -->
+<div class="glass-card p-6 rounded-xl">
+<h3 class="text-xl font-semibold text-white mb-6">Notification Settings</h3>
+<div class="space-y-6">
+<div class="flex items-center justify-between">
+<div>
+<p class="text-white font-medium">Appointment Reminders</p>
+<p class="text-gray-300 text-sm">Send reminders for upcoming appointments</p>
+</div>
+<div class="toggle-switch">
+<input type="checkbox" id="appointmentReminders" checked>
+<label for="appointmentReminders" class="toggle-label"></label>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div>
+<p class="text-white font-medium">Emergency Alerts</p>
+<p class="text-gray-300 text-sm">Receive critical system alerts</p>
+</div>
+<div class="toggle-switch">
+<input type="checkbox" id="emergencyAlerts" checked>
+<label for="emergencyAlerts" class="toggle-label"></label>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div>
+<p class="text-white font-medium">System Updates</p>
+<p class="text-gray-300 text-sm">Get notified about system updates</p>
+</div>
+<div class="toggle-switch">
+<input type="checkbox" id="systemUpdates">
+<label for="systemUpdates" class="toggle-label"></label>
+</div>
+</div>
+<div>
+<label class="block text-gray-300 mb-2">Notification Sound</label>
+<select class="w-full px-4 py-2 bg-white/10 border border-cyan-500/30 rounded-lg text-white pr-8">
+<option>Default</option>
+<option>Chime</option>
+<option>Bell</option>
+<option>None</option>
+</select>
+</div>
+</div>
+</div>
+<!-- System Information -->
+<div class="glass-card p-6 rounded-xl">
+<h3 class="text-xl font-semibold text-white mb-6">System Information</h3>
+<div class="space-y-4">
+<div class="flex justify-between">
+<span class="text-gray-300">Version</span>
+<span class="text-white">v2.1.0</span>
+</div>
+<div class="flex justify-between">
+<span class="text-gray-300">Last Update</span>
+<span class="text-white">Dec 15, 2024</span>
+</div>
+<div class="flex justify-between">
+<span class="text-gray-300">Database Status</span>
+<span class="text-green-400 flex items-center">
+<span class="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+Connected
+</span>
+</div>
+<div class="flex justify-between">
+<span class="text-gray-300">Server Status</span>
+<span class="text-green-400 flex items-center">
+<span class="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+Online
+</span>
+</div>
+<div class="pt-4 space-y-3">
+<button class="w-full px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 text-white rounded-lg font-semibold hover:from-cyan-600 hover:to-purple-600 transition-all whitespace-nowrap !rounded-button">
+Check for Updates
+</button>
+<button class="w-full px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg font-semibold hover:from-yellow-600 hover:to-orange-600 transition-all whitespace-nowrap !rounded-button">
+Backup Database
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<script id="navigationScript">
+document.addEventListener('DOMContentLoaded', function() {
+const sidebarItems = document.querySelectorAll('.sidebar-item');
+const sections = document.querySelectorAll('.section-content');
+const notificationBtn = document.getElementById('notificationBtn');
+const notificationPanel = document.getElementById('notificationPanel');
+notificationBtn.addEventListener('click', function(e) {
+e.stopPropagation();
+notificationPanel.classList.toggle('hidden');
+});
+document.addEventListener('click', function(e) {
+if (!notificationPanel.contains(e.target) && !notificationBtn.contains(e.target)) {
+notificationPanel.classList.add('hidden');
+}
+});
+sidebarItems.forEach(item => {
+item.addEventListener('click', function(e) {
+e.preventDefault();
+sidebarItems.forEach(si => si.classList.remove('active'));
+this.classList.add('active');
+const sectionId = this.dataset.section;
+sections.forEach(section => {
+if (section.id === sectionId) {
+section.classList.remove('hidden');
+section.classList.add('slide-in');
+} else {
+section.classList.add('hidden');
+}
+});
+});
+});
+});
+</script>
+<script id="counterScript">
+document.addEventListener('DOMContentLoaded', function() {
+function animateCounter(element) {
+const target = parseInt(element.dataset.target);
+const duration = 2000;
+const step = target / (duration / 16);
+let current = 0;
+const timer = setInterval(() => {
+current += step;
+if (current >= target) {
+current = target;
+clearInterval(timer);
+}
+element.textContent = Math.floor(current);
+}, 16);
+}
+const counters = document.querySelectorAll('.counter');
+counters.forEach(counter => {
+setTimeout(() => animateCounter(counter), 500);
+});
+});
+</script>
+<script id="chartsScript">
+document.addEventListener('DOMContentLoaded', function() {
+const appointmentsChart = echarts.init(document.getElementById('appointmentsChart'));
+const departmentChart = echarts.init(document.getElementById('departmentChart'));
+const appointmentsOption = {
+animation: false,
+grid: { top: 0, right: 0, bottom: 0, left: 0 },
+tooltip: {
+trigger: 'axis',
+backgroundColor: 'rgba(255, 255, 255, 0.9)',
+textStyle: { color: '#1f2937' }
+},
+xAxis: {
+type: 'category',
+data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+axisLine: { lineStyle: { color: '#374151' } },
+axisLabel: { color: '#9ca3af' }
+},
+yAxis: {
+type: 'value',
+axisLine: { lineStyle: { color: '#374151' } },
+axisLabel: { color: '#9ca3af' },
+splitLine: { lineStyle: { color: '#374151' } }
+},
+series: [{
+data: [12, 19, 15, 22, 18, 25, 20],
+type: 'line',
+smooth: true,
+lineStyle: { color: 'rgba(87, 181, 231, 1)', width: 3 },
+itemStyle: { color: 'rgba(87, 181, 231, 1)' },
+areaStyle: {
+color: {
+type: 'linear',
+x: 0, y: 0, x2: 0, y2: 1,
+colorStops: [
+{ offset: 0, color: 'rgba(87, 181, 231, 0.3)' },
+{ offset: 1, color: 'rgba(87, 181, 231, 0.1)' }
+]
+}
+},
+showSymbol: false
+}]
+};
+const departmentOption = {
+animation: false,
+grid: { top: 0, right: 0, bottom: 0, left: 0 },
+tooltip: {
+trigger: 'item',
+backgroundColor: 'rgba(255, 255, 255, 0.9)',
+textStyle: { color: '#1f2937' }
+},
+series: [{
+type: 'pie',
+radius: ['40%', '70%'],
+center: ['50%', '50%'],
+data: [
+{ value: 35, name: 'Cardiology', itemStyle: { color: 'rgba(87, 181, 231, 1)' } },
+{ value: 25, name: 'ENT', itemStyle: { color: 'rgba(141, 211, 199, 1)' } },
+{ value: 20, name: 'Gynecology', itemStyle: { color: 'rgba(251, 191, 114, 1)' } },
+{ value: 12, name: 'Urology', itemStyle: { color: 'rgba(252, 141, 98, 1)' } },
+{ value: 8, name: 'Pediatrics', itemStyle: { color: 'rgba(87, 181, 231, 0.7)' } }
+],
+itemStyle: {
+borderRadius: 8,
+borderColor: '#1f2937',
+borderWidth: 2
+},
+label: { color: '#ffffff' },
+emphasis: {
+itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0, 0, 0, 0.5)' }
+}
+}]
+};
+appointmentsChart.setOption(appointmentsOption);
+departmentChart.setOption(departmentOption);
+window.addEventListener('resize', function() {
+appointmentsChart.resize();
+departmentChart.resize();
+});
+});
+</script>
+<script id="doctorsScript">
+document.addEventListener('DOMContentLoaded', function() {
+const doctorsData = {
+cardiology: [
+{ name: 'Dr. Michael Chen', email: 'michael.chen@medicore.com', phone: '+1 (555) 234-5678', address: '123 Heart Ave, Medical District', price: '$250' },
+{ name: 'Dr. Emily Rodriguez', email: 'emily.rodriguez@medicore.com', phone: '+1 (555) 345-6789', address: '456 Cardiac St, Health Plaza', price: '$275' },
+{ name: 'Dr. James Wilson', email: 'james.wilson@medicore.com', phone: '+1 (555) 456-7890', address: '789 Surgery Blvd, Medical Center', price: '$300' },
+{ name: 'Dr. Sarah Thompson', email: 'sarah.thompson@medicore.com', phone: '+1 (555) 567-8901', address: '321 Cardio Lane, Hospital District', price: '$280' },
+{ name: 'Dr. David Martinez', email: 'david.martinez@medicore.com', phone: '+1 (555) 678-9012', address: '654 Heart Center Dr, Medical Park', price: '$265' }
+],
+ent: [
+{ name: 'Dr. Lisa Anderson', email: 'lisa.anderson@medicore.com', phone: '+1 (555) 789-0123', address: '987 ENT Plaza, Specialty Center', price: '$200' },
+{ name: 'Dr. Robert Kim', email: 'robert.kim@medicore.com', phone: '+1 (555) 890-1234', address: '147 Throat Ave, Medical Building', price: '$185' },
+{ name: 'Dr. Jennifer Lee', email: 'jennifer.lee@medicore.com', phone: '+1 (555) 901-2345', address: '258 Ear St, Healthcare Complex', price: '$195' },
+{ name: 'Dr. Mark Davis', email: 'mark.davis@medicore.com', phone: '+1 (555) 012-3456', address: '369 Nose Blvd, Specialty Clinic', price: '$210' },
+{ name: 'Dr. Amanda White', email: 'amanda.white@medicore.com', phone: '+1 (555) 123-4567', address: '741 ENT Center Dr, Medical Plaza', price: '$190' }
+],
+gynecology: [
+{ name: 'Dr. Rachel Green', email: 'rachel.green@medicore.com', phone: '+1 (555) 234-5679', address: '852 Women\'s Health Ave, Medical Center', price: '$220' },
+{ name: 'Dr. Michelle Brown', email: 'michelle.brown@medicore.com', phone: '+1 (555) 345-6780', address: '963 Obstetrics St, Healthcare Plaza', price: '$240' },
+{ name: 'Dr. Karen Taylor', email: 'karen.taylor@medicore.com', phone: '+1 (555) 456-7891', address: '159 Maternity Blvd, Women\'s Center', price: '$235' },
+{ name: 'Dr. Patricia Miller', email: 'patricia.miller@medicore.com', phone: '+1 (555) 567-8902', address: '357 Gyneco Lane, Medical District', price: '$225' },
+{ name: 'Dr. Susan Garcia', email: 'susan.garcia@medicore.com', phone: '+1 (555) 678-9013', address: '468 Birth Center Dr, Hospital Plaza', price: '$250' }
+],
+urology: [
+{ name: 'Dr. Thomas Johnson', email: 'thomas.johnson@medicore.com', phone: '+1 (555) 789-0124', address: '579 Urology Ave, Specialty Center', price: '$260' },
+{ name: 'Dr. Christopher Lee', email: 'christopher.lee@medicore.com', phone: '+1 (555) 890-1235', address: '680 Kidney St, Medical Building', price: '$245' },
+{ name: 'Dr. Daniel Wilson', email: 'daniel.wilson@medicore.com', phone: '+1 (555) 901-2346', address: '791 Fertility Blvd, Healthcare Complex', price: '$275' },
+{ name: 'Dr. Andrew Davis', email: 'andrew.davis@medicore.com', phone: '+1 (555) 012-3457', address: '802 Urologic Center Dr, Medical Plaza', price: '$255' },
+{ name: 'Dr. Kevin Martinez', email: 'kevin.martinez@medicore.com', phone: '+1 (555) 123-4568', address: '913 Men\'s Health Ave, Specialty Clinic', price: '$270' }
+],
+pediatrics: [
+{ name: 'Dr. Jessica Adams', email: 'jessica.adams@medicore.com', phone: '+1 (555) 234-5680', address: '024 Children\'s Ave, Pediatric Center', price: '$180' },
+{ name: 'Dr. Matthew Clark', email: 'matthew.clark@medicore.com', phone: '+1 (555) 345-6781', address: '135 Kids St, Medical Building', price: '$165' },
+{ name: 'Dr. Ashley Rodriguez', email: 'ashley.rodriguez@medicore.com', phone: '+1 (555) 456-7892', address: '246 Youth Blvd, Healthcare Complex', price: '$175' },
+{ name: 'Dr. Ryan Thompson', email: 'ryan.thompson@medicore.com', phone: '+1 (555) 567-8903', address: '357 Pediatric Center Dr, Medical Plaza', price: '$170' },
+{ name: 'Dr. Nicole White', email: 'nicole.white@medicore.com', phone: '+1 (555) 678-9014', address: '468 Child Health Ave, Specialty Clinic', price: '$185' }
+]
+};
+const specializationTabs = document.querySelectorAll('.specialization-tab');
+const doctorsGrid = document.getElementById('doctorsGrid');
+function createDoctorCard(doctor, index) {
+return `
+<div class="glass-card p-6 rounded-xl hover-glow">
+<div class="text-center mb-4">
+<img src="https://readdy.ai/api/search-image?query=professional%20medical%20doctor%20portrait%20wearing%20white%20coat%20with%20stethoscope%2C%20confident%20smile%2C%20modern%20hospital%20background%2C%20high%20quality%20medical%20photography&width=120&height=120&seq=doctor${index}&orientation=squarish"
+alt="${doctor.name}" class="w-20 h-20 rounded-full mx-auto mb-4 border-2 border-cyan-400 neon-glow object-cover">
+<h3 class="text-xl font-semibold text-white mb-2">${doctor.name}</h3>
+<p class="text-cyan-400 text-sm mb-4">Specialist</p>
+</div>
+<div class="space-y-3 mb-4">
+<div class="flex items-center space-x-2 text-sm">
+<div class="w-4 h-4 flex items-center justify-center">
+<i class="ri-mail-line text-cyan-400"></i>
+</div>
+<span class="text-gray-300">${doctor.email}</span>
+</div>
+<div class="flex items-center space-x-2 text-sm">
+<div class="w-4 h-4 flex items-center justify-center">
+<i class="ri-phone-line text-cyan-400"></i>
+</div>
+<span class="text-gray-300">${doctor.phone}</span>
+</div>
+<div class="flex items-center space-x-2 text-sm">
+<div class="w-4 h-4 flex items-center justify-center">
+<i class="ri-map-pin-line text-cyan-400"></i>
+</div>
+<span class="text-gray-300">${doctor.address}</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-lg font-bold text-cyan-400">${doctor.price}</span>
+<div class="star-rating" data-rating="5">
+<span class="star active text-yellow-400">★</span>
+<span class="star active text-yellow-400">★</span>
+<span class="star active text-yellow-400">★</span>
+<span class="star active text-yellow-400">★</span>
+<span class="star active text-yellow-400">★</span>
+</div>
+</div>
+</div>
+<button class="w-full px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 text-white rounded-lg font-semibold hover:from-cyan-600 hover:to-purple-600 transition-all neon-glow whitespace-nowrap !rounded-button">
+Book Appointment
+</button>
+</div>
+`;
+}
+function loadDoctors(specialty) {
+const doctors = doctorsData[specialty] || [];
+doctorsGrid.innerHTML = doctors.map((doctor, index) => createDoctorCard(doctor, index)).join('');
+const starRatings = document.querySelectorAll('.star-rating');
+starRatings.forEach(rating => {
+const stars = rating.querySelectorAll('.star');
+stars.forEach((star, index) => {
+star.addEventListener('click', function() {
+stars.forEach((s, i) => {
+s.classList.toggle('active', i <= index);
+});
+});
+});
+});
+}
+specializationTabs.forEach(tab => {
+tab.addEventListener('click', function() {
+specializationTabs.forEach(t => {
+t.classList.remove('active', 'bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/30');
+t.classList.add('bg-white/5', 'text-gray-300', 'border-white/10');
+});
+this.classList.remove('bg-white/5', 'text-gray-300', 'border-white/10');
+this.classList.add('active', 'bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/30');
+loadDoctors(this.dataset.specialty);
+});
+});
+loadDoctors('cardiology');
+});
+</script>
+<script id="pharmacyScript">
+document.addEventListener('DOMContentLoaded', function() {
+const addToCartButtons = document.querySelectorAll('#medicinesGrid button');
+addToCartButtons.forEach(button => {
+button.addEventListener('click', function() {
+const card = this.closest('.medicine-card');
+const name = card.querySelector('h3').textContent;
+const price = card.querySelector('.text-cyan-400').textContent;
+const description = card.querySelector('.text-gray-300').textContent;
+const image = card.querySelector('img').src;
+addToCart({ name, price, description, image });
+});
+});
+const medicinesData = {
+cardiology: [
+{ name: 'Atorvastatin', description: 'Cholesterol-lowering medication', price: '$45.99', stock: 1000 },
+{ name: 'Metoprolol', description: 'Beta-blocker for blood pressure', price: '$32.50', stock: 1000 },
+{ name: 'Lisinopril', description: 'ACE inhibitor for hypertension', price: '$28.75', stock: 1000 },
+{ name: 'Warfarin', description: 'Blood thinner medication', price: '$55.20', stock: 1000 },
+{ name: 'Aspirin', description: 'Low-dose for heart protection', price: '$12.99', stock: 1000 },
+{ name: 'Clopidogrel', description: 'Antiplatelet medication', price: '$67.80', stock: 1000 },
+{ name: 'Digoxin', description: 'Heart rhythm medication', price: '$42.30', stock: 1000 },
+{ name: 'Furosemide', description: 'Diuretic for fluid retention', price: '$18.95', stock: 1000 },
+{ name: 'Carvedilol', description: 'Beta-blocker for heart failure', price: '$39.60', stock: 1000 },
+{ name: 'Amlodipine', description: 'Calcium channel blocker', price: '$25.40', stock: 1000 },
+{ name: 'Losartan', description: 'ARB for blood pressure', price: '$34.85', stock: 1000 },
+{ name: 'Simvastatin', description: 'Statin for cholesterol', price: '$29.70', stock: 1000 },
+{ name: 'Isosorbide', description: 'Nitrate for chest pain', price: '$48.25', stock: 1000 },
+{ name: 'Valsartan', description: 'Heart failure medication', price: '$52.10', stock: 1000 },
+{ name: 'Spironolactone', description: 'Potassium-sparing diuretic', price: '$36.75', stock: 1000 },
+{ name: 'Propranolol', description: 'Non-selective beta-blocker', price: '$22.90', stock: 1000 },
+{ name: 'Diltiazem', description: 'Calcium channel blocker', price: '$41.50', stock: 1000 },
+{ name: 'Enalapril', description: 'ACE inhibitor medication', price: '$27.35', stock: 1000 },
+{ name: 'Hydrochlorothiazide', description: 'Thiazide diuretic', price: '$15.80', stock: 1000 },
+{ name: 'Rosuvastatin', description: 'High-intensity statin', price: '$58.90', stock: 1000 }
+],
+ent: [
+{ name: 'Amoxicillin', description: 'Antibiotic for ear infections', price: '$24.99', stock: 1000 },
+{ name: 'Prednisone', description: 'Corticosteroid for inflammation', price: '$18.75', stock: 1000 },
+{ name: 'Azithromycin', description: 'Antibiotic for respiratory infections', price: '$35.60', stock: 1000 },
+{ name: 'Fluticasone', description: 'Nasal spray for allergies', price: '$42.30', stock: 1000 },
+{ name: 'Cetirizine', description: 'Antihistamine for allergies', price: '$16.50', stock: 1000 },
+{ name: 'Ofloxacin', description: 'Ear drops for infections', price: '$28.90', stock: 1000 },
+{ name: 'Dexamethasone', description: 'Anti-inflammatory drops', price: '$22.75', stock: 1000 },
+{ name: 'Loratadine', description: 'Non-drowsy antihistamine', price: '$19.40', stock: 1000 },
+{ name: 'Mometasone', description: 'Nasal corticosteroid', price: '$38.85', stock: 1000 },
+{ name: 'Pseudoephedrine', description: 'Decongestant medication', price: '$14.25', stock: 1000 },
+{ name: 'Ciprofloxacin', description: 'Antibiotic ear drops', price: '$31.70', stock: 1000 },
+{ name: 'Budesonide', description: 'Nasal steroid spray', price: '$45.60', stock: 1000 },
+{ name: 'Phenylephrine', description: 'Nasal decongestant', price: '$12.95', stock: 1000 },
+{ name: 'Montelukast', description: 'Allergy and asthma medication', price: '$52.40', stock: 1000 },
+{ name: 'Fexofenadine', description: 'Long-acting antihistamine', price: '$21.80', stock: 1000 },
+{ name: 'Triamcinolone', description: 'Nasal allergy spray', price: '$34.15', stock: 1000 },
+{ name: 'Gentamicin', description: 'Antibiotic ear drops', price: '$26.70', stock: 1000 },
+{ name: 'Beclomethasone', description: 'Nasal corticosteroid', price: '$29.95', stock: 1000 },
+{ name: 'Azelastine', description: 'Antihistamine nasal spray', price: '$41.25', stock: 1000 },
+{ name: 'Diphenhydramine', description: 'Antihistamine for allergies', price: '$17.60', stock: 1000 }
+],
+gynecology: [
+{ name: 'Metformin', description: 'PCOS and diabetes medication', price: '$22.50', stock: 1000 },
+{ name: 'Clomiphene', description: 'Fertility medication', price: '$68.90', stock: 1000 },
+{ name: 'Progesterone', description: 'Hormone replacement therapy', price: '$45.75', stock: 1000 },
+{ name: 'Estradiol', description: 'Estrogen hormone therapy', price: '$38.60', stock: 1000 },
+{ name: 'Fluconazole', description: 'Antifungal for yeast infections', price: '$29.40', stock: 1000 },
+{ name: 'Metronidazole', description: 'Antibiotic for bacterial infections', price: '$24.85', stock: 1000 },
+{ name: 'Doxycycline', description: 'Antibiotic for various infections', price: '$32.70', stock: 1000 },
+{ name: 'Norethindrone', description: 'Progestin hormone therapy', price: '$41.20', stock: 1000 },
+{ name: 'Miconazole', description: 'Topical antifungal cream', price: '$18.95', stock: 1000 },
+{ name: 'Levonorgestrel', description: 'Emergency contraceptive', price: '$55.30', stock: 1000 },
+{ name: 'Tamoxifen', description: 'Breast cancer medication', price: '$72.80', stock: 1000 },
+{ name: 'Raloxifene', description: 'Osteoporosis prevention', price: '$64.15', stock: 1000 },
+{ name: 'Letrozole', description: 'Fertility and cancer treatment', price: '$78.50', stock: 1000 },
+{ name: 'Calcium Carbonate', description: 'Calcium supplement', price: '$15.60', stock: 1000 },
+{ name: 'Folic Acid', description: 'Prenatal vitamin supplement', price: '$12.75', stock: 1000 },
+{ name: 'Iron Sulfate', description: 'Iron deficiency supplement', price: '$16.90', stock: 1000 },
+{ name: 'Prenatal Vitamins', description: 'Complete prenatal nutrition', price: '$28.40', stock: 1000 },
+{ name: 'Conjugated Estrogens', description: 'Menopause hormone therapy', price: '$52.65', stock: 1000 },
+{ name: 'Spironolactone', description: 'Hormonal acne treatment', price: '$36.85', stock: 1000 },
+{ name: 'Depo-Provera', description: 'Injectable contraceptive', price: '$89.20', stock: 1000 }
+],
+urology: [
+{ name: 'Tamsulosin', description: 'Prostate enlargement medication', price: '$42.80', stock: 1000 },
+{ name: 'Finasteride', description: 'Prostate and hair loss treatment', price: '$38.95', stock: 1000 },
+{ name: 'Sildenafil', description: 'Erectile dysfunction medication', price: '$65.40', stock: 1000 },
+{ name: 'Tadalafil', description: 'ED and prostate medication', price: '$72.30', stock: 1000 },
+{ name: 'Dutasteride', description: 'Prostate enlargement treatment', price: '$56.70', stock: 1000 },
+{ name: 'Oxybutynin', description: 'Overactive bladder medication', price: '$34.60', stock: 1000 },
+{ name: 'Tolterodine', description: 'Bladder control medication', price: '$48.25', stock: 1000 },
+{ name: 'Solifenacin', description: 'Urinary incontinence treatment', price: '$52.90', stock: 1000 },
+{ name: 'Mirabegron', description: 'Overactive bladder treatment', price: '$78.40', stock: 1000 },
+{ name: 'Alfuzosin', description: 'Prostate medication', price: '$41.75', stock: 1000 },
+{ name: 'Doxazosin', description: 'Prostate and blood pressure', price: '$29.85', stock: 1000 },
+{ name: 'Terazosin', description: 'Prostate enlargement treatment', price: '$33.50', stock: 1000 },
+{ name: 'Vardenafil', description: 'Erectile dysfunction treatment', price: '$68.90', stock: 1000 },
+{ name: 'Phenazopyridine', description: 'Urinary pain relief', price: '$22.40', stock: 1000 },
+{ name: 'Nitrofurantoin', description: 'UTI antibiotic', price: '$26.75', stock: 1000 },
+{ name: 'Trimethoprim', description: 'Urinary tract infection', price: '$24.60', stock: 1000 },
+{ name: 'Ciprofloxacin', description: 'UTI and prostate infection', price: '$31.95', stock: 1000 },
+{ name: 'Levofloxacin', description: 'Urinary tract antibiotic', price: '$39.80', stock: 1000 },
+{ name: 'Fesoterodine', description: 'Overactive bladder medication', price: '$64.20', stock: 1000 },
+{ name: 'Darifenacin', description: 'Bladder control treatment', price: '$58.35', stock: 1000 }
+],
+pediatrics: [
+{ name: 'Amoxicillin Suspension', description: 'Pediatric antibiotic liquid', price: '$18.90', stock: 1000 },
+{ name: 'Acetaminophen', description: 'Fever and pain relief', price: '$12.75', stock: 1000 },
+{ name: 'Ibuprofen Suspension', description: 'Anti-inflammatory for children', price: '$15.60', stock: 1000 },
+{ name: 'Azithromycin Suspension', description: 'Pediatric antibiotic', price: '$28.40', stock: 1000 },
+{ name: 'Prednisolone', description: 'Corticosteroid for children', price: '$22.85', stock: 1000 },
+{ name: 'Albuterol Inhaler', description: 'Asthma medication for kids', price: '$45.30', stock: 1000 },
+{ name: 'Cetirizine Syrup', description: 'Allergy medication for children', price: '$16.95', stock: 1000 },
+{ name: 'Ondansetron', description: 'Anti-nausea medication', price: '$34.70', stock: 1000 },
+{ name: 'Loratadine Syrup', description: 'Non-drowsy antihistamine', price: '$19.25', stock: 1000 },
+{ name: 'Erythromycin', description: 'Pediatric antibiotic', price: '$24.60', stock: 1000 },
+{ name: 'Cephalexin Suspension', description: 'Antibiotic for skin infections', price: '$21.80', stock: 1000 },
+{ name: 'Fluticasone Inhaler', description: 'Asthma prevention inhaler', price: '$52.40', stock: 1000 },
+{ name: 'Montelukast Chewable', description: 'Asthma and allergy tablets', price: '$38.90', stock: 1000 },
+{ name: 'Diphenhydramine', description: 'Allergy and sleep aid', price: '$14.35', stock: 1000 },
+{ name: 'Guaifenesin', description: 'Cough expectorant', price: '$17.50', stock: 1000 },
+{ name: 'Dextromethorphan', description: 'Cough suppressant', price: '$13.75', stock: 1000 },
+{ name: 'Polyethylene Glycol', description: 'Pediatric laxative', price: '$26.20', stock: 1000 },
+{ name: 'Simethicone Drops', description: 'Gas relief for infants', price: '$11.95', stock: 1000 },
+{ name: 'Multivitamin Gummies', description: 'Children\'s daily vitamins', price: '$23.40', stock: 1000 },
+{ name: 'Zinc Sulfate', description: 'Immune support supplement', price: '$18.65', stock: 1000 }
+]
+};
+const medicineCategories = document.querySelectorAll('.medicine-category');
+const medicinesGrid = document.getElementById('medicinesGrid');
+function createMedicineCard(medicine, index) {
+return `
+<div class="glass-card p-4 rounded-xl medicine-card hover-glow">
+<div class="text-center mb-4">
+<img src="https://readdy.ai/api/search-image?query=modern%20pharmaceutical%20medicine%20bottle%20or%20pill%20container%20on%20clean%20white%20background%2C%20professional%20medical%20product%20photography%2C%20high%20quality&width=120&height=120&seq=medicine${index}&orientation=squarish"
+alt="${medicine.name}" class="w-16 h-16 mx-auto mb-3 object-cover rounded-lg">
+<h3 class="text-lg font-semibold text-white mb-2">${medicine.name}</h3>
+<p class="text-gray-300 text-sm mb-3">${medicine.description}</p>
+</div>
+<div class="space-y-2 mb-4">
+<div class="flex justify-between items-center">
+<span class="text-gray-300 text-sm">Price:</span>
+<span class="text-cyan-400 font-bold">${medicine.price}</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-gray-300 text-sm">Stock:</span>
+<span class="text-green-400 text-sm">${medicine.stock} available</span>
+</div>
+</div>
+<button class="w-full px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-500 text-white rounded-lg font-semibold hover:from-cyan-600 hover:to-purple-600 transition-all neon-glow text-sm whitespace-nowrap !rounded-button">
+Add to Cart
+</button>
+</div>
+`;
+}
+function loadMedicines(category) {
+const medicines = medicinesData[category] || [];
+medicinesGrid.innerHTML = medicines.map((medicine, index) => createMedicineCard(medicine, index)).join('');
+}
+medicineCategories.forEach(category => {
+category.addEventListener('click', function() {
+medicineCategories.forEach(c => {
+c.classList.remove('active', 'bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/30');
+c.classList.add('bg-white/5', 'text-gray-300', 'border-white/10');
+});
+this.classList.remove('bg-white/5', 'text-gray-300', 'border-white/10');
+this.classList.add('active', 'bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/30');
+loadMedicines(this.dataset.category);
+});
+});
+loadMedicines('cardiology');
+});
+</script>
+<script id="cartScript">
+document.addEventListener('DOMContentLoaded', function() {
+let cart = [];
+
+function createToast(message) {
+  const toast = document.createElement('div');
+  toast.id = 'cartToast';
+  toast.className = 'fixed bottom-4 right-4 bg-gradient-to-r from-cyan-500 to-purple-500 text-white px-6 py-3 rounded-lg shadow-xl z-50 flex items-center space-x-2 transform translate-y-full opacity-0 transition-all duration-300';
+  toast.innerHTML = `
+    <i class="ri-checkbox-circle-line text-xl"></i>
+    <span>${message}</span>
+  `;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.classList.remove('translate-y-full', 'opacity-0');
+  }, 100);
+
+  setTimeout(() => {
+    toast.classList.add('translate-y-full', 'opacity-0');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+window.addToCart = function(item) {
+  cart.push(item);
+  updateCart();
+  
+  // Update cart counter in navigation
+  const cartCounter = document.getElementById('cartCounter') || (() => {
+    const counter = document.createElement('div');
+    counter.id = 'cartCounter';
+    counter.className = 'absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs';
+    document.querySelector('[data-section="cart"]').appendChild(counter);
+    return counter;
+  })();
+  cartCounter.textContent = cart.length;
+  
+  // Show success toast
+  createToast('Medicine added to cart successfully!');
+  
+  // Update button state
+  const button = event.target;
+  const originalContent = button.innerHTML;
+  button.innerHTML = '<i class="ri-check-line mr-1"></i>Added';
+  button.classList.remove('from-cyan-500', 'to-purple-500', 'hover:from-cyan-600', 'hover:to-purple-600');
+  button.classList.add('from-green-500', 'to-emerald-500');
+  
+  setTimeout(() => {
+    button.innerHTML = originalContent;
+    button.classList.remove('from-green-500', 'to-emerald-500');
+    button.classList.add('from-cyan-500', 'to-purple-500', 'hover:from-cyan-600', 'hover:to-purple-600');
+  }, 2000);
+  
+  const cartSection = document.querySelector('[data-section="cart"]');
+  cartSection.classList.add('pulse-animation');
+  setTimeout(() => cartSection.classList.remove('pulse-animation'), 1000);
+};
+function updateCart() {
+const cartItems = document.getElementById('cartItems');
+cartItems.innerHTML = cart.map((item, index) => `
+<div class="flex items-center space-x-4 p-4 bg-white/5 rounded-lg border border-white/10">
+<img src="${item.image}" alt="${item.name}" class="w-16 h-16 rounded-lg object-cover">
+<div class="flex-1">
+<h4 class="text-white font-medium">${item.name}</h4>
+<p class="text-gray-300 text-sm">${item.description}</p>
+</div>
+<div class="text-right">
+<p class="text-cyan-400 font-semibold">${item.price}</p>
+<button onclick="removeFromCart(${index})" class="text-red-400 text-sm hover:text-red-300">Remove</button>
+</div>
+</div>
+`).join('');
+calculateTotal();
+}
+window.removeFromCart = function(index) {
+cart.splice(index, 1);
+updateCart();
+};
+function calculateTotal() {
+const subtotal = cart.reduce((sum, item) => sum + parseFloat(item.price.replace('$', '')), 0);
+const tax = subtotal * 0.1;
+const total = subtotal + tax;
+document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+document.getElementById('tax').textContent = `$${tax.toFixed(2)}`;
+document.getElementById('total').textContent = `$${total.toFixed(2)}`;
+}
+const checkoutBtn = document.getElementById('checkoutBtn');
+const paymentModal = document.getElementById('paymentModal');
+const closePaymentModal = document.getElementById('closePaymentModal');
+const paymentForm = document.getElementById('paymentForm');
+checkoutBtn.addEventListener('click', function() {
+if (cart.length === 0) {
+alert('Your cart is empty. Please add items before checking out.');
+return;
+}
+paymentModal.classList.remove('hidden');
+});
+closePaymentModal.addEventListener('click', function() {
+paymentModal.classList.add('hidden');
+});
+paymentForm.addEventListener('submit', function(e) {
+e.preventDefault();
+cart = [];
+updateCart();
+paymentModal.classList.add('hidden');
+alert('Purchase completed successfully! Thank you for your order.');
+});
+});
+</script>
+<script id="appointmentsScript">
+document.addEventListener('DOMContentLoaded', function() {
+const timeSlots = document.getElementById('timeSlots');
+const selectedTimeInput = document.getElementById('selectedTime');
+const doctorSelect = document.getElementById('doctorSelect');
+const bookAppointmentBtn = document.getElementById('bookAppointment');
+const doctors = [
+'Dr. Michael Chen - Cardiology',
+'Dr. Emily Rodriguez - Cardiology',
+'Dr. Lisa Anderson - ENT',
+'Dr. Rachel Green - Gynecology',
+'Dr. Thomas Johnson - Urology',
+'Dr. Jessica Adams - Pediatrics'
+];
+doctors.forEach(doctor => {
+const option = document.createElement('option');
+option.value = doctor;
+option.textContent = doctor;
+doctorSelect.appendChild(option);
+});
+function generateTimeSlots() {
+const slots = [];
+const startTime = 17;
+const endTime = 22;
+for (let hour = startTime; hour < endTime; hour++) {
+for (let minute = 0; minute < 60; minute += 15) {
+const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+const isBooked = Math.random() < 0.3;
+slots.push({ time, isBooked });
+}
+}
+return slots;
+}
+const slots = generateTimeSlots();
+slots.forEach(slot => {
+const slotElement = document.createElement('div');
+slotElement.className = `appointment-slot p-3 rounded-lg border text-center ${
+slot.isBooked
+? 'booked bg-red-500/20 border-red-500/30 text-red-400'
+: 'bg-white/5 border-white/10 text-white hover:bg-cyan-500/20 hover:border-cyan-500/30'
+}`;
+slotElement.textContent = slot.time;
+if (!slot.isBooked) {
+slotElement.addEventListener('click', function() {
+document.querySelectorAll('.appointment-slot').forEach(s => {
+s.classList.remove('selected', 'bg-cyan-500/30', 'border-cyan-500/50');
+});
+this.classList.add('selected', 'bg-cyan-500/30', 'border-cyan-500/50');
+selectedTimeInput.value = slot.time;
+});
+}
+timeSlots.appendChild(slotElement);
+});
+bookAppointmentBtn.addEventListener('click', function() {
+const selectedTime = selectedTimeInput.value;
+const selectedDoctor = doctorSelect.value;
+const reason = document.getElementById('visitReason').value;
+if (!selectedTime || !selectedDoctor || !reason) {
+alert('Please fill in all required fields');
+return;
+}
+alert(`Appointment booked successfully!\n\nTime: ${selectedTime}\nDoctor: ${selectedDoctor}\nReason: ${reason}`);
+selectedTimeInput.value = '';
+doctorSelect.value = '';
+document.getElementById('visitReason').value = '';
+document.querySelectorAll('.appointment-slot').forEach(s => {
+s.classList.remove('selected', 'bg-cyan-500/30', 'border-cyan-500/50');
+});
+});
+});
+</script>
+<script id="profileScript">
+document.addEventListener('DOMContentLoaded', function() {
+const editProfileBtn = document.getElementById('editProfileBtn');
+const profileInputs = document.querySelectorAll('#profile input[readonly]');
+let isEditing = false;
+editProfileBtn.addEventListener('click', function() {
+if (!isEditing) {
+profileInputs.forEach(input => {
+input.removeAttribute('readonly');
+input.classList.add('border-cyan-400', 'focus:border-cyan-300');
+});
+this.textContent = 'Save Changes';
+this.classList.remove('from-cyan-500', 'to-purple-500', 'hover:from-cyan-600', 'hover:to-purple-600');
+this.classList.add('from-green-500', 'to-emerald-500', 'hover:from-green-600', 'hover:to-emerald-600');
+isEditing = true;
+} else {
+profileInputs.forEach(input => {
+input.setAttribute('readonly', 'readonly');
+input.classList.remove('border-cyan-400', 'focus:border-cyan-300');
+});
+this.textContent = 'Edit Profile';
+this.classList.remove('from-green-500', 'to-emerald-500', 'hover:from-green-600', 'hover:to-emerald-600');
+this.classList.add('from-cyan-500', 'to-purple-500', 'hover:from-cyan-600', 'hover:to-purple-600');
+isEditing = false;
+alert('Profile updated successfully!');
+}
+});
+const toggleSwitches = document.querySelectorAll('.toggle-switch input[type="checkbox"]');
+toggleSwitches.forEach(toggle => {
+const label = toggle.nextElementSibling;
+label.style.cssText = `
+position: relative;
+display: inline-block;
+width: 48px;
+height: 24px;
+background: ${toggle.checked ? 'linear-gradient(45deg, #06b6d4, #8b5cf6)' : 'rgba(255, 255, 255, 0.1)'};
+border-radius: 24px;
+cursor: pointer;
+transition: all 0.3s ease;
+border: 1px solid ${toggle.checked ? '#06b6d4' : 'rgba(255, 255, 255, 0.2)'};
+`;
+label.innerHTML = `<span style="
+position: absolute;
+top: 2px;
+left: ${toggle.checked ? '26px' : '2px'};
+width: 18px;
+height: 18px;
+background: white;
+border-radius: 50%;
+transition: all 0.3s ease;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+"></span>`;
+toggle.addEventListener('change', function() {
+const span = label.querySelector('span');
+label.style.background = this.checked ? 'linear-gradient(45deg, #06b6d4, #8b5cf6)' : 'rgba(255, 255, 255, 0.1)';
+label.style.borderColor = this.checked ? '#06b6d4' : 'rgba(255, 255, 255, 0.2)';
+span.style.left = this.checked ? '26px' : '2px';
+});
+});
+});
+</script>
+<script id="chatScript">
+document.addEventListener('DOMContentLoaded', function() {
+const chatInput = document.getElementById('chatInput');
+const sendMessageBtn = document.getElementById('sendMessage');
+const chatMessages = document.getElementById('chatMessages');
+const typingIndicator = document.getElementById('typingIndicator');
+function addMessage(content, isUser = true) {
+const messageDiv = document.createElement('div');
+messageDiv.className = `flex items-start space-x-3 ${isUser ? 'justify-end' : ''}`;
+const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+if (isUser) {
+messageDiv.innerHTML = `
+<div class="chat-bubble bg-cyan-500/20 border border-cyan-500/30 rounded-lg p-3 neon-glow">
+<p class="text-white">${content}</p>
+<span class="text-xs text-gray-400 mt-1 block text-right">${currentTime}</span>
+</div>
+<img src="https://readdy.ai/api/search-image?query=professional%20doctor%20portrait%20with%20white%20coat%20in%20modern%20hospital%20setting%2C%20clean%20background%2C%20high%20quality%20medical%20photography&width=32&height=32&seq=profile4&orientation=squarish"
+alt="You" class="w-8 h-8 rounded-full object-cover">
+`;
+} else {
+messageDiv.innerHTML = `
+<img src="https://readdy.ai/api/search-image?query=professional%20senior%20doctor%20portrait%20with%20white%20coat%20and%20stethoscope%2C%20confident%20smile%2C%20modern%20medical%20office%20background&width=32&height=32&seq=admin6&orientation=squarish"
+alt="Dr. Wanos" class="w-8 h-8 rounded-full object-cover">
+<div class="chat-bubble bg-purple-500/20 border border-purple-500/30 rounded-lg p-3 neon-purple">
+<p class="text-white">${content}</p>
+<span class="text-xs text-gray-400 mt-1 block">${currentTime}</span>
+</div>
+`;
+}
+chatMessages.appendChild(messageDiv);
+chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+function showTypingIndicator() {
+typingIndicator.classList.remove('hidden');
+chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+function hideTypingIndicator() {
+typingIndicator.classList.add('hidden');
+}
+function sendMessage() {
+const message = chatInput.value.trim();
+if (!message) return;
+addMessage(message, true);
+chatInput.value = '';
+showTypingIndicator();
+setTimeout(() => {
+hideTypingIndicator();
+const responses = [
+"Thank you for your message. I'll review your case and get back to you shortly.",
+"That's a great question. Based on your symptoms, I'd recommend scheduling an in-person consultation.",
+"I understand your concerns. Let me provide you with some initial guidance while we schedule your appointment.",
+"Your health is our priority. I'll make sure to address all your questions during our next meeting.",
+"Thank you for sharing those details. This information will help me provide better care for you."
+];
+const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+addMessage(randomResponse, false);
+}, 1500);
+}
+sendMessageBtn.addEventListener('click', sendMessage);
+chatInput.addEventListener('keypress', function(e) {
+if (e.key === 'Enter') {
+sendMessage();
+}
+});
+document.getElementById('emojiBtn').addEventListener('click', function() {
+const emojis = ['😊', '👍', '❤️', '😷', '🏥', '💊', '🩺', '😔', '😌', '🙏'];
+const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+chatInput.value += randomEmoji;
+chatInput.focus();
+});
+});
+</script>
+<style>
+.toggle-switch input[type="checkbox"] {
+display: none;
+}
+</style>
+<script>
+async function loadDoctors() {
+  const res = await fetch("/api/doctors/");
+  const doctors = await res.json();
+
+  const container = document.getElementById("doctors-list");
+  const template = document.getElementById("doctor-template");
+
+  container.innerHTML = ""; 
+
+  doctors.forEach(doc => {
+    let card = template.cloneNode(true);
+    card.style.display = "block";
+
+    
+    card.querySelector(".doctor-img").src = doc.image || "https://cdn-icons-png.flaticon.com/512/3774/3774299.png";
+    card.querySelector(".doctor-img").alt = doc.name;
+    card.querySelector(".doctor-name").innerText = "Dr. " + doc.name;
+    card.querySelector(".doctor-specialization").innerText = doc.specialization || "Specialist";
+    card.querySelector(".doctor-email").innerText = doc.email || "No email";
+    card.querySelector(".doctor-phone").innerText = doc.phone || "N/A";
+    card.querySelector(".doctor-address").innerText = doc.address || "No Address";
+    card.querySelector(".doctor-price").innerText = `$${doc.price}`;
+    card.querySelector(".doctor-rating").innerText = `${doc.rating || 0} ⭐`;
+
+    container.appendChild(card);
+  });
+}
+
+document.addEventListener("DOMContentLoaded", loadDoctors);
+</script>
+<script>
+async function loadMedicines() {
+  try {
+    const res = await fetch("/api/pharmacy/");
+    const medicines = await res.json();
+
+    const container = document.getElementById("pharmacy-list");
+    const template = document.getElementById("medicine-template");
+
+    container.innerHTML = "";
+
+    medicines.forEach(med => {
+      let card = template.cloneNode(true);
+      card.style.display = "block";
+
+      
+      card.querySelector(".medicine-img").src = med.image || "https://cdn-icons-png.flaticon.com/512/2966/2966481.png";
+      card.querySelector(".medicine-img").alt = med.name;
+      card.querySelector(".medicine-name").innerText = med.name;
+      card.querySelector(".medicine-description").innerText = med.description || "No description available";
+      card.querySelector(".medicine-price").innerText = `$${med.price}`;
+      card.querySelector(".medicine-stock").innerText = med.quantity > 0 ? `${med.quantity} available` : "Out of stock";
+
+      container.appendChild(card);
+    });
+  } catch (err) {
+    console.error("Error loading medicines:", err);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", loadMedicines);
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const slots = document.querySelectorAll(".appointment-slot");
+  const selectedTimeInput = document.getElementById("selectedTime");
+  const doctorSelect = document.getElementById("doctorSelect");
+  const visitReason = document.getElementById("visitReason");
+  const bookBtn = document.getElementById("bookAppointment");
+
+  let selectedTime = null;
+
+  
+  slots.forEach(slot => {
+    slot.addEventListener("click", () => {
+      if (slot.classList.contains("booked")) return; // لو محجوز مسبقاً متتحددش
+
+      slots.forEach(s => s.classList.remove("bg-cyan-500/20", "border-cyan-500/30", "text-cyan-400"));
+      slot.classList.add("bg-cyan-500/20", "border-cyan-500/30", "text-cyan-400");
+      selectedTime = slot.innerText;
+      selectedTimeInput.value = selectedTime;
+    });
+  });
+
+  
+  bookBtn.addEventListener("click", async () => {
+    const doctor = doctorSelect.value;
+    const reason = visitReason.value;
+
+    if (!selectedTime || !doctor || !reason) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    const appointmentData = {
+      time: selectedTime,
+      doctor: doctor,
+      reason: reason
+    };
+
+    try {
+      const res = await fetch("/api/appointments/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(appointmentData)
+      });
+
+      if (res.ok) {
+        alert("✅ Appointment booked successfully!");
+        
+        slots.forEach(slot => {
+          if (slot.innerText === selectedTime) {
+            slot.classList.add("booked", "bg-red-500/20", "border-red-500/30", "text-red-400");
+            slot.classList.remove("bg-cyan-500/20", "border-cyan-500/30", "text-cyan-400");
+          }
+        });
+        
+        selectedTimeInput.value = "";
+        doctorSelect.value = "";
+        visitReason.value = "";
+        selectedTime = null;
+      } else {
+        alert("❌ Failed to book appointment.");
+      }
+    } catch (err) {
+      console.error("Error booking appointment:", err);
+      alert("❌ Server error while booking appointment.");
+    }
+  });
+});
+</script>
+<script>
+function addToCart(item) {
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+  cart.push(item);
+  localStorage.setItem("cart", JSON.stringify(cart));
+  alert("✅ Added to cart successfully!");
+}
+
+document.addEventListener("click", e => {
+  if (e.target.innerText.includes("Add to Cart")) {
+    const card = e.target.closest(".glass-card");
+    const name = card.querySelector(".medicine-name").innerText;
+    const price = card.querySelector(".medicine-price").innerText;
+
+    addToCart({
+      type: "Medicine",
+      name: name,
+      price: parseFloat(price.replace("$", "")) || 0
+    });
+  }
+});
+
+document.addEventListener("click", e => {
+  if (e.target.id === "bookAppointment") {
+    const selectedTime = document.getElementById("selectedTime").value;
+    const doctor = document.getElementById("doctorSelect").value;
+    const reason = document.getElementById("visitReason").value;
+
+    if (!selectedTime || !doctor || !reason) {
+      alert("⚠️ Please fill all appointment fields.");
+      return;
+    }
+
+    addToCart({
+      type: "Appointment",
+      name: doctor,
+      price: 100, 
+      time: selectedTime,
+      reason: reason
+    });
+
+    alert("✅ Appointment booked and added to cart!");
+  }
+});
+</script>
+<!-- باقي السكربتات اللي عندك -->
+
+<script>
+function loadCart() {
+  const cart = JSON.parse(localStorage.getItem("cart")) || [];
+  const container = document.getElementById("cart-items");
+  const totalEl = document.getElementById("cart-total");
+  let total = 0;
+
+  container.innerHTML = "";
+
+  if (cart.length === 0) {
+    container.innerHTML = `<p class="text-gray-400">Your cart is empty.</p>`;
+  }
+
+  cart.forEach((item, index) => {
+    total += item.price;
+
+    const box = document.createElement("div");
+    box.className = "glass-card p-4 rounded-xl flex justify-between items-center";
+
+    box.innerHTML = `
+      <div>
+        <h4 class="font-semibold text-white">${item.name}</h4>
+        <p class="text-sm text-gray-400">${item.type}${item.time ? " - " + item.time : ""}</p>
+      </div>
+      <div class="flex items-center space-x-4">
+        <span class="text-cyan-400 font-bold">$${item.price.toFixed(2)}</span>
+        <button onclick="removeFromCart(${index})" class="text-red-400 hover:text-red-600">✕</button>
+      </div>
+    `;
+
+    container.appendChild(box);
+  });
+
+  totalEl.innerText = `$${total.toFixed(2)}`;
+}
+
+function removeFromCart(index) {
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+  cart.splice(index, 1);
+  localStorage.setItem("cart", JSON.stringify(cart));
+  loadCart();
+}
+
+document.addEventListener("DOMContentLoaded", loadCart);
+
+document.getElementById("confirmPurchase").addEventListener("click", () => {
+  alert("✅ Purchase confirmed! Thank you.");
+  localStorage.removeItem("cart");
+  loadCart();
+});
+</script>
+</body>
+</html>
